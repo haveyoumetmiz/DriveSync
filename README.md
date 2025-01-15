@@ -50,7 +50,7 @@ This project introduces a unique control mechanism for a racing game developed i
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone <repository_url>
+   git clone <https://github.com/haveyoumetmiz/car.git>
    ```
 2. Open the project in Unity.
 3. Install the required OpenCV dependencies.
