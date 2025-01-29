@@ -1,17 +1,33 @@
+using System.Collections;
+using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Speedometer : MonoBehaviour
 {
-    public Rigidbody carRigidbody;  // Reference to the car's Rigidbody
-    public Text speedText;          // Reference to the UI Text component
+    public Rigidbody target;
 
-    void Update()
+    public float maxSpeed = 0.0f; // The maximum speed of the target ** IN KM/H **
+
+    public float minSpeedArrowAngle;
+    public float maxSpeedArrowAngle;
+
+    [Header("UI")]
+    public Text speedLabel; // The label that displays the speed;
+    public RectTransform arrow; // The arrow in the speedometer
+
+    private float speed = 0.0f;
+    private void Update()
     {
-        // Calculate speed in km/h (Rigidbody velocity is in meters per second)
-        float speed = carRigidbody.velocity.magnitude * 3.6f;
+        // 3.6f to convert in kilometers
+        // ** The speed must be clamped by the car controller **
+        speed = target.velocity.magnitude * 3.6f;
 
-        // Update the speed text
-        speedText.text = speed.ToString("0") + " km/h";
+        if (speedLabel != null)
+            speedLabel.text = ((int)speed) + " km/h";
+        if (arrow != null)
+            arrow.localEulerAngles =
+                new Vector3(0, 0, Mathf.Lerp(minSpeedArrowAngle, maxSpeedArrowAngle, speed / maxSpeed));
     }
 }

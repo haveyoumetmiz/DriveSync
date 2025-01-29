@@ -4,144 +4,187 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    private float horizontalInput, verticalInput;
-    private float currentSteerAngle, currentBreakForce;
-    private bool isBreaking;
+    #region Settings
+    [Header("Movement Settings")]
+    [SerializeField] private float motorForce = 2000f;
+    [SerializeField] private float brakeForce = 3000f;
+    [SerializeField] private float maxSteerAngle = 30f;
+    
+    [Header("Boost Settings")]
+    [SerializeField] private float boostForce = 3000f;
+    [SerializeField] private float boostDuration = 2f;
+    
+    [Header("Reposition Settings")]
+    [SerializeField] private float positionRecordInterval = 0.1f;
+    [SerializeField] private float historyDuration = 10f;
+    [SerializeField] private float flipThreshold = 0.6f; // Threshold for considering the car flipped (0-1)
+    [SerializeField] private float autoRecoverDelay = 3f; // Time before auto-recovery
+    [SerializeField] private float stabilizationForce = 50f; // Force to stabilize the car
+    [SerializeField] private float rightingTorque = 500f; // Torque to right the car
+    #endregion
 
-    // Settings
-    [SerializeField] private float motorForce, breakForce, maxSteerAngle;
-    [SerializeField] private float boostForce = 3000f; // Force applied during boost
-    [SerializeField] private float boostDuration = 2f; // Duration of the boost in seconds
-    [SerializeField] private float positionRecordInterval = 0.1f; // Interval at which position is recorded
+    #region Wheel References
+    [Header("Wheel Colliders")]
+    [SerializeField] private WheelCollider frontLeftWheelCollider;
+    [SerializeField] private WheelCollider frontRightWheelCollider;
+    [SerializeField] private WheelCollider rearLeftWheelCollider;
+    [SerializeField] private WheelCollider rearRightWheelCollider;
 
-    private float originalMotorForce; // To store the original motor force
+    [Header("Wheel Transforms")]
+    [SerializeField] private Transform frontLeftWheelTransform;
+    [SerializeField] private Transform frontRightWheelTransform;
+    [SerializeField] private Transform rearLeftWheelTransform;
+    [SerializeField] private Transform rearRightWheelTransform;
+    #endregion
 
-    // Wheel Colliders
-    [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
-    [SerializeField] private WheelCollider rearLeftWheelCollider, rearRightWheelCollider;
-
-    // Wheels
-    [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
-    [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
-
-    private Rigidbody rb;
+    #region Private Variables
+    private float horizontalInput;
+    private float verticalInput;
+    private float currentSteerAngle;
+    private float currentBrakeForce;
+    private bool isBraking;
+    
+    private Rigidbody carRigidbody; // Renamed to fix warning
     private bool isBoosting;
     private float boostEndTime;
-
-    // For storing positions over time
+    private float lastUprightTime;
+    
     private List<Vector3> positionHistory = new List<Vector3>();
     private List<Quaternion> rotationHistory = new List<Quaternion>();
-    private float historyDuration = 10f; // Duration of history to keep (in seconds)
+    private int maxHistoryEntries;
+    private const KeyCode BOOST_KEY = KeyCode.LeftShift;
+    private const KeyCode REPOSITION_KEY = KeyCode.R;
+    #endregion
 
-    private void Start() {
-        rb = GetComponent<Rigidbody>();
-        originalMotorForce = motorForce; // Store the original motor force
+    private void Start()
+    {
+        carRigidbody = GetComponent<Rigidbody>();
+        maxHistoryEntries = Mathf.CeilToInt(historyDuration / positionRecordInterval);
         StartCoroutine(RecordPosition());
+        
+        // Lower center of mass to prevent flipping
+        carRigidbody.centerOfMass = new Vector3(0, -0.5f, 0);
     }
 
-    private void FixedUpdate() {
-        GetInput();
-        HandleMotor();
-        HandleSteering();
+    private void Update()
+    {
+        HandleInput();
+        CheckAutoRecover();
+    }
+
+    private void FixedUpdate()
+    {
+        HandleMovement();
         UpdateWheels();
-        CheckReposition();
-        HandleBoost();
+        ApplyStabilization();
     }
 
-    private void GetInput() {
-        // Steering Input
+    private void HandleInput()
+    {
+        // Movement inputs
         horizontalInput = Input.GetAxis("Horizontal");
-
-        // Acceleration Input
         verticalInput = Input.GetAxis("Vertical");
+        isBraking = Input.GetKey(KeyCode.Space);
 
-        // Breaking Input
-        isBreaking = Input.GetKey(KeyCode.Space);
+        // Special actions
+        if (Input.GetKeyDown(REPOSITION_KEY)) RepositionCar();
+        if (Input.GetKeyDown(BOOST_KEY)) StartBoost();
     }
 
-    private void HandleMotor() {
-        // Apply boost if active
+    private void HandleMovement()
+    {
+        HandleSteering();
+        HandleMotor();
+        HandleBrakes();
+        HandleBoostState();
+    }
+    private void HandleMotor()
+    {
         float currentMotorForce = isBoosting ? motorForce + boostForce : motorForce;
 
-        frontLeftWheelCollider.motorTorque = verticalInput * currentMotorForce;
-        frontRightWheelCollider.motorTorque = verticalInput * currentMotorForce;
-        currentBreakForce = isBreaking ? breakForce : 0f;
-        ApplyBreaking();
+        if (Mathf.Approximately(verticalInput, 0)) // If no input, gradually stop the car
+        {
+            frontLeftWheelCollider.motorTorque = 0f;
+            frontRightWheelCollider.motorTorque = 0f;
+            carRigidbody.velocity = Vector3.Lerp(carRigidbody.velocity, Vector3.zero, Time.fixedDeltaTime * 2f); // Smooth stop
+        }
+        else
+        {
+            frontLeftWheelCollider.motorTorque = verticalInput * currentMotorForce;
+            frontRightWheelCollider.motorTorque = verticalInput * currentMotorForce;
+        }
     }
 
-    private void ApplyBreaking() {
-        frontRightWheelCollider.brakeTorque = currentBreakForce;
-        frontLeftWheelCollider.brakeTorque = currentBreakForce;
-        rearLeftWheelCollider.brakeTorque = currentBreakForce;
-        rearRightWheelCollider.brakeTorque = currentBreakForce;
+    private void HandleBrakes()
+    {
+        currentBrakeForce = isBraking ? brakeForce : 0f;
+        ApplyBrakeForce();
     }
 
-    private void HandleSteering() {
+    private void ApplyBrakeForce()
+    {
+        frontLeftWheelCollider.brakeTorque = currentBrakeForce;
+        frontRightWheelCollider.brakeTorque = currentBrakeForce;
+        rearLeftWheelCollider.brakeTorque = currentBrakeForce;
+        rearRightWheelCollider.brakeTorque = currentBrakeForce;
+    }
+
+    private void HandleSteering()
+    {
         currentSteerAngle = maxSteerAngle * horizontalInput;
         frontLeftWheelCollider.steerAngle = currentSteerAngle;
         frontRightWheelCollider.steerAngle = currentSteerAngle;
     }
 
-    private void UpdateWheels() {
-        UpdateSingleWheel(frontLeftWheelCollider, frontLeftWheelTransform);
-        UpdateSingleWheel(frontRightWheelCollider, frontRightWheelTransform);
-        UpdateSingleWheel(rearRightWheelCollider, rearRightWheelTransform);
-        UpdateSingleWheel(rearLeftWheelCollider, rearLeftWheelTransform);
+    private void UpdateWheels()
+    {
+        UpdateWheel(frontLeftWheelCollider, frontLeftWheelTransform);
+        UpdateWheel(frontRightWheelCollider, frontRightWheelTransform);
+        UpdateWheel(rearLeftWheelCollider, rearLeftWheelTransform);
+        UpdateWheel(rearRightWheelCollider, rearRightWheelTransform);
     }
 
-    private void UpdateSingleWheel(WheelCollider wheelCollider, Transform wheelTransform) {
-        Vector3 pos;
-        Quaternion rot;
-        wheelCollider.GetWorldPose(out pos, out rot);
-        wheelTransform.rotation = rot;
-        wheelTransform.position = pos;
+    private void UpdateWheel(WheelCollider collider, Transform transform)
+    {
+        collider.GetWorldPose(out Vector3 position, out Quaternion rotation);
+        transform.SetPositionAndRotation(position, rotation);
     }
 
-    private void CheckReposition() {
-        if (Input.GetKeyDown(KeyCode.R)) {
-            RepositionCarToHistory();
-        }
-    }
-
-    private void RepositionCarToHistory() {
-        if (positionHistory.Count > 0) {
-            // Get the position and rotation from 10 seconds ago
-            int index = Mathf.Max(0, positionHistory.Count - Mathf.RoundToInt(10f / positionRecordInterval));
-            transform.position = positionHistory[index];
-            transform.rotation = rotationHistory[index];
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-    }
-
-    private void HandleBoost() {
-        if (Input.GetKeyDown(KeyCode.LeftShift)) {
-            StartBoost();
-        }
-
-        if (isBoosting && Time.time > boostEndTime) {
-            EndBoost();
-        }
-    }
-
-    private void StartBoost() {
+    private void StartBoost()
+    {
+        if (isBoosting) return;
         isBoosting = true;
         boostEndTime = Time.time + boostDuration;
     }
 
-    private void EndBoost() {
-        isBoosting = false;
-        motorForce = originalMotorForce;
+    private void HandleBoostState()
+    {
+        if (isBoosting && Time.time > boostEndTime)
+        {
+            isBoosting = false;
+        }
     }
 
-    private IEnumerator RecordPosition() {
-        while (true) {
-            // Record the car's position and rotation
+    private void RepositionCar()
+    {
+        if (positionHistory.Count == 0) return;
+
+        int targetIndex = Mathf.Max(0, positionHistory.Count - maxHistoryEntries);
+        carRigidbody.velocity = Vector3.zero;
+        carRigidbody.angularVelocity = Vector3.zero;
+        transform.SetPositionAndRotation(positionHistory[targetIndex], rotationHistory[targetIndex]);
+    }
+
+    private IEnumerator RecordPosition()
+    {
+        while (true)
+        {
             positionHistory.Add(transform.position);
             rotationHistory.Add(transform.rotation);
 
-            // Keep the history within the last 10 seconds
-            if (positionHistory.Count > historyDuration / positionRecordInterval) {
+            // Maintain history size
+            while (positionHistory.Count > maxHistoryEntries)
+            {
                 positionHistory.RemoveAt(0);
                 rotationHistory.RemoveAt(0);
             }
@@ -149,4 +192,60 @@ public class CarController : MonoBehaviour
             yield return new WaitForSeconds(positionRecordInterval);
         }
     }
+
+    private void ApplyStabilization()
+    {
+        if (IsUpright())
+        {
+            // Apply extra downward force when upright for better traction
+            carRigidbody.AddForce(-transform.up * stabilizationForce, ForceMode.Acceleration);
+        }
+        else
+        {
+            // Try to right the car when not upright
+            RightCar();
+        }
+    }
+
+    private bool IsUpright()
+    {
+        // Check if car is flipped using dot product with world up
+        return Vector3.Dot(transform.up, Vector3.up) > flipThreshold;
+    }
+
+    private void RightCar()
+    {
+        // Only allow righting if car is not moving much
+        if (carRigidbody.velocity.magnitude < 2f)
+        {
+            // Calculate target rotation
+            Quaternion targetRot = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
+            
+            // Smoothly rotate towards target rotation
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Time.fixedDeltaTime * 2f);
+            
+            // Add stabilizing torque
+            carRigidbody.AddTorque(transform.forward * rightingTorque);
+        }
+    }
+
+    private void CheckAutoRecover()
+    {
+        if (!IsUpright())
+        {
+            if (Time.time - lastUprightTime > autoRecoverDelay)
+            {
+                RepositionCar();
+            }
+        }
+        else
+        {
+            lastUprightTime = Time.time;
+        }
+    }
+    public float GetMaxSpeed()
+    {
+        return 50f; // Adjust based on your car's top speed
+    }
+
 }
