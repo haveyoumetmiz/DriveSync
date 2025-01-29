@@ -7938,6 +7938,63 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.2334194, y: 2.7568371, z: 3.045956}
   m_Center: {x: 0.25569132, y: 1.3255576, z: -0.109861664}
+--- !u!1001 &412475147
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6645616114513181105, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
+      propertyPath: m_Name
+      value: Free Racing Car Purple Variant (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
 --- !u!43 &424065123
 Mesh:
   m_ObjectHideFlags: 0
@@ -24631,7 +24688,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1498150123}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: d9c7664806e78274486a272fcd523eca, type: 3}
@@ -36796,3 +36853,4 @@ SceneRoots:
   - {fileID: 1505273622}
   - {fileID: 730010023}
   - {fileID: 1462291806}
+  - {fileID: 412475147}
