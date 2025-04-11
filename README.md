@@ -6,7 +6,7 @@
 ---
 
 ## 🎮 Demo Video
-[![DriveSync Demo](Assets/demo-thumbnail.png)](Assets/demo.mp4)  
+[![DriveSync Demo](Assets/demo-thumbnail.png)](Assets/Video/0411.mp4)  
 *Click the image to view or download the gameplay demo video.*
 
 ---
