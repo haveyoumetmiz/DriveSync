@@ -1,113 +1,123 @@
 # DriveSync
 
 ## 🚀 Overview
-**DriveSync** redefines racing game controls by using **hand gestures** via **real-time computer vision** instead of traditional input devices. Developed in Unity, and powered by **OpenCV**, **Mediapipe**, and **Python**, this project lets you steer, accelerate, and brake using nothing but your hands.
+**DriveSync** redefines racing game controls by replacing traditional input devices with **hand gesture recognition** powered by **real-time computer vision**. Built in **Unity** and leveraging **OpenCV**, **Mediapipe**, and **Python**, DriveSync allows you to steer, accelerate, and brake using intuitive hand movements.
 
 ---
 
 ## 🎮 Demo Video
-
 [![DriveSync Demo](Assets/demo-thumbnail.png)](Assets/demo.mp4)  
-🔘 _Click the image to view/download the gameplay demo video._
+*Click the image to view or download the gameplay demo video.*
 
 ---
 
 ## ✨ Features
-- 🖐️ **Hand Gesture Controls** via Python + Mediapipe
-- 🕹️ **Real-Time Game Steering** in Unity
-- 🔁 **Live Communication** through UDP socket
-- 🎮 **Immersive, Controller-Free Gameplay**
-- 🧠 Great project to showcase CV + Unity skills
+- 🖐️ **Hand Gesture Controls**: Powered by Python and Mediapipe for accurate and responsive input.
+- 🕹️ **Real-Time Steering**: Seamlessly integrated with Unity for a smooth gaming experience.
+- 🔁 **Seamless Communication**: Utilizes UDP sockets for efficient data transfer between Python and Unity.
+- 🎮 **Immersive, Controller-Free Gameplay**: Enjoy a fully immersive experience without traditional controllers.
+- 🧠 **Skill Showcase**: Ideal for demonstrating expertise in computer vision and Unity development.
 
 ---
 
 ## 🔧 Setup & Execution
 
+### Prerequisites
+- **Python 3.x** installed
+- **Unity Hub** and **Unity Editor** (version compatible with the project)
+- A webcam for gesture detection
+
+### Installation Steps
 1. **Install Python Dependencies**  
-   Ensure you have Python 3.x and run the following:
+   Install the required Python packages:
    ```bash
-   pip install opencv-python mediapipe pyinput
-Enable UDP Communication
-This system uses UDP sockets to send data from Python (gesture detection) to Unity.
+   pip install opencv-python mediapipe pydirectinput
+   ```
 
-Run Gesture Recognition Script
+2. **Enable UDP Communication**  
+   DriveSync uses UDP sockets to transmit gesture data from Python to Unity. Ensure your network settings allow UDP communication (default port specified in scripts).
 
-bash
-Copy code
-python gesture_recognition.py
-This opens the webcam.
+3. **Run the Gesture Recognition Script**  
+   Execute the Python script to start gesture detection:  
+   - Opens the webcam for real-time hand tracking.  
+   - Detects gestures (left, right, open palm, closed fist).  
+   - Sends control data to Unity via UDP.  
+   ```bash
+   python gesture_recognition.py
+   ```
 
-Detects hand position and gestures (left/right/palm/fist).
+4. **Open the Unity Project**  
+   - Launch Unity Hub and open the DriveSync project.  
+   - Locate the `handgesture.cs` script in the Unity project.  
+   - This script listens for UDP packets from Python and maps them to in-game controls.
 
-Sends control data via UDP to Unity.
+5. **Play the Game**  
+   - Press the Play button in the Unity Editor.  
+   - Use hand gestures to control the car! ✋➡️🏎️
 
-Open Unity Project
+---
 
-Open the project in Unity Hub.
+## 🧠 How It Works
 
-Locate and open the handgesture.cs script inside Unity.
-
-This script listens for UDP packets from Python and triggers game inputs accordingly.
-
-Play the Game
-
-Press the Play button in Unity Editor.
-
-Start controlling the car with your hands! ✋➡️🏎️
-
-🧠 How It Works
-Architecture Flow:
-text
-Copy code
+### Architecture Flow
+```
 Webcam → Python (OpenCV + Mediapipe) → gesture_recognition.py
          ↓
        UDP Socket (Python → Unity)
          ↓
 Unity → handgesture.cs → Car Control
-gesture_recognition.py detects gestures and sends signals.
+```
 
-handgesture.cs in Unity listens to the UDP port and reacts accordingly.
+- **`gesture_recognition.py`**: Captures webcam input, processes hand gestures using Mediapipe, and sends control signals over UDP.  
+- **`handgesture.cs`**: Listens for UDP packets in Unity and translates them into car movements (steering, acceleration, braking).  
+- **Result**: Fluid, controller-free car control using hand gestures.
 
-Result: You control the car using your hand movements.
+---
 
-📦 Tech Stack
-Unity (C#) – Game logic and rendering
+## 📦 Tech Stack
+- **Unity (C#)**: Game logic and rendering  
+- **Python (OpenCV + Mediapipe)**: Real-time gesture detection  
+- **UDP Sockets**: Data transmission between Python and Unity  
+- **pydirectinput**: Optional keyboard emulation for testing  
 
-Python (OpenCV + Mediapipe) – Gesture detection
+---
 
-UDP Socket – Real-time data transmission
+## 🕹️ Gesture Mappings
+| Hand Gesture | Action      |
+|--------------|-------------|
+| Hand Right   | Turn Right  |
+| Hand Left    | Turn Left   |
+| Open Palm    | Accelerate  |
+| Closed Fist  | Brake       |
 
-pyinput / pydirectinput – Keyboard emulation (optional use)
+---
 
-🕹️ Gesture Mappings
-Hand Gesture	Action
-Hand Right	Turn Right
-Hand Left	Turn Left
-Open Palm	Accelerate
-Closed Fist	Brake
-🚧 Future Enhancements
-🎨 Gesture customization via UI
+## 🚧 Future Enhancements
+- 🎨 Customizable gestures through a user interface  
+- 🌐 Online multiplayer support  
+- 🔧 Improved gesture calibration and noise filtering  
+- 🧠 Machine learning for advanced gesture recognition  
+- 🕶️ Integration with AR headsets  
 
-🌐 Online multiplayer support
+---
 
-🔧 Smarter calibration and gesture filtering
+## 👥 Contributing
+Contributions are welcome! To contribute:  
+1. Fork the repository.  
+2. Create a new branch for your feature or bug fix.  
+3. Submit a pull request with a clear description of your changes.  
 
-🧠 ML-based gesture recognition
+Please report bugs or suggest features via the [Issues](https://github.com/haveyoumetmiz/DriveSync/issues) page.
 
-🕶️ AR headset integration
+---
 
-👥 Contributing
-Pull requests are welcome! If you find bugs or want to add features, feel free to fork and improve the project.
+## 📄 License
+This project is licensed under the [MIT License](LICENSE).
 
-📄 License
-This project is licensed under the MIT License.
+---
 
-📬 Contact
-📧 Email: mizh48.ansar@gmail.com
-
-💼 LinkedIn: Mizhab Ansar
-
-🧑‍💻 GitHub: haveyoumetmiz
-
-📷 Instagram: @haveyoumetmiz
-
+## 📬 Contact
+- 📧 **Email**: [mizh48.ansar@gmail.com](mailto:mizh48.ansar@gmail.com)  
+- 💼 **LinkedIn**: [Mizhab Ansar](https://www.linkedin.com/in/mizhab-ansar)  
+- 🧑‍💻 **GitHub**: [haveyoumetmiz](https://github.com/haveyoumetmiz)  
+- 📷 **Instagram**: [@haveyoumetmiz](https://www.instagram.com/haveyoumetmiz)  
