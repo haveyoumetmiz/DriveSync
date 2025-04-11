@@ -6,6 +6,7 @@
 ---
 
 ## 🎮 Demo Video
+▶️ [Watch DriveSync Gameplay Demo](https://drive.google.com/file/d/1S4uFdTO_Cd4LgsSncCQ1x9v_KFuJFR5T/preview)
 [![DriveSync Demo](DriveSync.jpg)](Assets/Video/0411.mp4)  
 *Click the image to view or download the gameplay demo video.*
 
