@@ -1,79 +1,74 @@
 import cv2
 import mediapipe as mp
-import socket  # Import socket for UDP
+import socket
+import os
 
-# Initialize Mediapipe Hands model
+# Initialize Mediapipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 mp_draw = mp.solutions.drawing_utils
 
-# Set up UDP socket
-UDP_IP = "127.0.0.1"  # Localhost (or change to Unity's machine IP if needed)
+# UDP Setup
+UDP_IP = "127.0.0.1"
 UDP_PORT = 12345
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Start capturing video from the webcam
-cap = cv2.VideoCapture(0)
+# Detect if running in GitHub Actions
+running_in_ci = os.environ.get("GITHUB_ACTIONS") == "true"
+
+if running_in_ci:
+    print("CI detected — using sample video instead of webcam.")
+    cap = cv2.VideoCapture("C:\\GitHub\\DriveSync\\Assets\\Video\\0411.mp4")
+else:
+    print("Local run — using webcam.")
+    cap = cv2.VideoCapture(0)
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
+        print("No frame captured. Ending.")
         break
 
-    # Flip the frame horizontally for a mirror effect
     frame = cv2.flip(frame, 1)
     height, width, _ = frame.shape
-    
-    # Convert the frame to RGB as Mediapipe requires RGB input
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # Process the frame and get hand landmarks
     results = hands.process(rgb_frame)
 
-    # If hands are detected, draw landmarks and connections
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-            # Extract coordinates of key landmarks
-            wrist = hand_landmarks.landmark[0]  # Wrist landmark
+            wrist = hand_landmarks.landmark[0]
             wrist_x = int(wrist.x * width)
-
-            # Gesture detection (Open Palm vs. Closed Fist)
             thumb_tip = hand_landmarks.landmark[4]
             index_tip = hand_landmarks.landmark[8]
             distance = abs(thumb_tip.x - index_tip.x) + abs(thumb_tip.y - index_tip.y)
 
-            if distance > 0.1:  # Open Palm
+            if distance > 0.1:
                 gesture = "Open Palm"
-                cv2.putText(frame, "Open Palm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                cv2.putText(frame, gesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
             else:
                 gesture = "Closed Fist"
-                cv2.putText(frame, "Closed Fist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                cv2.putText(frame, gesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
-            # Determine hand position (Left, Right, or Center)
             if wrist_x < width // 3:
                 side = "Left"
-                cv2.putText(frame, "Hand on Left Side", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             elif wrist_x > 2 * width // 3:
                 side = "Right"
-                cv2.putText(frame, "Hand on Right Side", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             else:
                 side = "Center"
-                cv2.putText(frame, "Hand in Center", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
-            # Send gesture and side information over UDP to Unity
+            cv2.putText(frame, f"Hand on {side} Side", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
             message = f"{gesture} - {side}"
             sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
 
-    # Display the resulting frame
-    cv2.imshow('Hand Gesture Detection', frame)
+    if not running_in_ci:
+        cv2.imshow('Hand Gesture Detection', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    # Break the loop if the 'q' key is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Release resources
 cap.release()
-cv2.destroyAllWindows()
+if not running_in_ci:
+    cv2.destroyAllWindows()
 sock.close()
