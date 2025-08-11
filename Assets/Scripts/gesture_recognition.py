@@ -1,7 +1,11 @@
 import cv2
 import mediapipe as mp
+<<<<<<< HEAD
 import socket
 import os
+=======
+import socket  # Import socket for UDP
+>>>>>>> b8d418748a233c7abeb69e24a2b454b93df7bdd3
 
 # Initialize Mediapipe Hands
 mp_hands = mp.solutions.hands
@@ -62,11 +66,6 @@ while cap.isOpened():
 
             message = f"{gesture} - {side}"
             sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
-
-    if not running_in_ci:
-        cv2.imshow('Hand Gesture Detection', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
 cap.release()
 if not running_in_ci:
