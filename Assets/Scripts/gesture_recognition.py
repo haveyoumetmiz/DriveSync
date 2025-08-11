@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 import socket  # Import socket for UDP
-import pydirectinput  # For simulating keyboard input
 
 # Initialize Mediapipe Hands model
 mp_hands = mp.solutions.hands
@@ -66,21 +65,6 @@ while cap.isOpened():
             # Send gesture and side information over UDP to Unity
             message = f"{gesture} - {side}"
             sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
-
-            # Control simulation based on gesture and position
-            if gesture == "Open Palm":
-                if side == "Right":
-                    pydirectinput.press("right")
-                    pydirectinput.keyDown("up")
-                elif side == "Left":
-                    pydirectinput.press("left")
-                    pydirectinput.keyDown("up")
-                elif side == "Center":  # New: If Open Palm in Center, hold 'Up' key
-                    pydirectinput.keyDown("up")
-            else:
-                pydirectinput.keyUp("up")  # Release 'Up' key if not Open Palm in Center
-                if gesture == "Closed Fist":
-                    pydirectinput.press("down")
 
     # Display the resulting frame
     cv2.imshow('Hand Gesture Detection', frame)
