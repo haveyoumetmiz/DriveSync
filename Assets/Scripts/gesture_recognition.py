@@ -18,7 +18,7 @@ running_in_ci = os.environ.get("GITHUB_ACTIONS") == "true"
 
 if running_in_ci:
     print("CI detected — using sample video instead of webcam.")
-    cap = cv2.VideoCapture("Assets/Scripts/sample_input.mp4")
+    cap = cv2.VideoCapture("C:\\GitHub\\DriveSync\\Assets\\Video\\0411.mp4")
 else:
     print("Local run — using webcam.")
     cap = cv2.VideoCapture(0)
